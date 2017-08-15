@@ -62,12 +62,14 @@ def compute_power(rawvolts, rawamps):
     smoothing later.
     """
 
-    power = rawvolts * rawamps
+    power = rawvolts * 1.58
+    power_low = rawvolts * 1.51
+    power_high = rawvolts * 1.648
 
-    return power
+    return power, power_low, power_high
 
 
-def make_plot(time, voltage, current, power):
+def make_plot(time, voltage, current, midcurrent, power, power_low, power_high):
     plt.style.use('ggplot')
 
     labelsizes = 13
@@ -85,20 +87,27 @@ def make_plot(time, voltage, current, power):
                   )
 
 
-    ax1.set_title('HRC Primary Bus Power over Mission Lifetime')
-    #ax1.set_xlabel('Year')
-    ax1.set_ylabel('Volts')
+
 
     ax2.plot_date(time, current,
                   markersize=1.5, color='gray',
-                  alpha=0.8, label='2PRBSCR : 5 Daily'
+                  alpha=0.8, label='2PRBSCR : Daily'
                   )
 
+    ax2.plot_date(time, midcurrent, markersize=1.5, label='Current MidVals')
 
-    ax2.set_ylabel('Amps')
 
-    ax3.plot_date(time, power, markersize=1.5, label='Power')
-    ax3.set_ylabel('Watts')
+
+    ax3.plot_date(time, power, markersize=1.5,
+                  label=r'Power (2PRBSVL $\times$ 2PRBSVL)')
+
+    ax3.fill_between(time, power_low, power_high, color='gray', alpha=0.3, label='Power envelope')
+
+
+    ax1.set_title('HRC Primary Bus Power over Mission Lifetime')
+    ax1.set_ylabel('Voltage (Volts)')
+    ax2.set_ylabel('Current (Amps)')
+    ax3.set_ylabel('Power (Watts)')
     ax3.set_xlabel('Year')
 
     ax1.legend(loc=1)
@@ -150,16 +159,17 @@ def main():
         rawtimes = vtab_daily['times']
         rawvolts = vtab_daily['means']
         rawamps = ctab_daily['means']
+        midamps = ctab_daily['midvals']
     else:
         print("MSID times do not match!")
         sys.exit()
 
     #bintimes, bindata , mean, std = bindata(convert_time(rawtimes), voltage)
 
-    power = compute_power(rawvolts, rawamps)
+    power, power_low, power_high = compute_power(rawvolts, rawamps)
 
-    make_plot(convert_time(rawtimes), rawvolts, rawamps, power)
-
+    make_plot(convert_time(rawtimes), rawvolts, rawamps, midamps,
+              power, power_low, power_high)
 
 
 if __name__ == '__main__':
