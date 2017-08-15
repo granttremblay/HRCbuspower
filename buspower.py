@@ -80,6 +80,8 @@ def make_plot(time, voltage, current, midcurrent, power, power_low, power_high):
     plt.rcParams['xtick.labelsize'] = labelsizes
     plt.rcParams['ytick.labelsize'] = labelsizes
 
+    # plt.rc('font', family='Helvetica')
+
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, figsize=(8, 12))
     ax1.plot_date(time, voltage,
                   markersize=1.5, color='gray',
@@ -115,7 +117,8 @@ def make_plot(time, voltage, current, midcurrent, power, power_low, power_high):
     ax3.legend(loc=1)
 
     plt.tight_layout()
-    plt.show()
+    plt.show(block=True)
+    fig.savefig('busplot.pdf')
 
     # if kwargs is not None:
     #    for key, value in kwargs.iteritems()
