@@ -149,7 +149,7 @@ def main():
     if match:
         rawtimes = vtab_daily['times']
         rawvolts = vtab_daily['means']
-        rawamps = ctab_daily['midvals']
+        rawamps = ctab_daily['means']
     else:
         print("MSID times do not match!")
         sys.exit()
