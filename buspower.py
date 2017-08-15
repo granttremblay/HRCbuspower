@@ -69,7 +69,9 @@ def compute_power(rawvolts, rawamps):
     return power, power_low, power_high
 
 
-def make_plot(time, voltage, current, midcurrent, power, power_low, power_high):
+def make_plot(time, voltage24, voltage28, current,
+              midcurrent, power24, power_low24, power_high24,
+              power28, power_low28, power_high28):
     plt.style.use('ggplot')
 
     labelsizes = 13
@@ -83,11 +85,16 @@ def make_plot(time, voltage, current, midcurrent, power, power_low, power_high):
     # plt.rc('font', family='Helvetica')
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, figsize=(8, 12))
-    ax1.plot_date(time, voltage,
-                  markersize=1.5, color='gray',
+
+    ax1.plot_date(time, voltage28,
+                  markersize=1.5,
                   alpha=0.8, label='2PRBSVL : Daily'
                   )
 
+    ax1.plot_date(time, voltage24,
+                  markersize=1.5,
+                  alpha=0.8, label='2P24VAVL : Daily'
+                  )
 
 
 
@@ -100,11 +107,17 @@ def make_plot(time, voltage, current, midcurrent, power, power_low, power_high):
 
 
 
-    ax3.plot_date(time, power, markersize=1.5,
-                  label=r'Power (2PRBSVL $\times$ 2PRBSVL)')
+    ax3.plot_date(time, power28, markersize=1.5,
+                  label=r'Power (2PRBSVL $\times$ 2PRBSCR)')
 
-    ax3.fill_between(time, power_low, power_high, color='gray', alpha=0.3, label='Power envelope')
+    ax3.fill_between(time, power_low28, power_high28, color='gray', alpha=0.3, label='Power envelope')
 
+    ax3.plot_date(time, power24, markersize=1.5,
+                  label=r'Power (2P24VAVL $\times$ 2PRBSCR)')
+
+    ax3.fill_between(time, power_low24, power_high24, color='gray', alpha=0.3, label=None)
+
+    ax3.set_ylim(32, 56)
 
     ax1.set_title('HRC Primary Bus Power over Mission Lifetime')
     ax1.set_ylabel('Voltage (Volts)')
@@ -152,27 +165,35 @@ def make_plotly_plot():
 
 def main():
 
-    vtab_daily = ascii.read('2PRBSVL_daily.csv')
+    v28tab_daily = ascii.read('2PRBSVL_daily.csv')
     ctab_daily = ascii.read('2PRBSCR_daily.csv')
 
-    match = set(vtab_daily['times']) == set(ctab_daily['times'])
+    v24tab_daily = ascii.read('2P24VAVL_daily.csv')
+
+    match = set(v28tab_daily['times']) == set(ctab_daily['times'])
 
     # make sure these match!
     if match:
-        rawtimes = vtab_daily['times']
-        rawvolts = vtab_daily['means']
+        rawtimes = v28tab_daily['times']
+
+        rawvolts28 = v28tab_daily['means']
+        rawvolts24 = v24tab_daily['means']
+
         rawamps = ctab_daily['means']
         midamps = ctab_daily['midvals']
+
     else:
         print("MSID times do not match!")
         sys.exit()
 
     #bintimes, bindata , mean, std = bindata(convert_time(rawtimes), voltage)
 
-    power, power_low, power_high = compute_power(rawvolts, rawamps)
+    power24, power_low24, power_high24 = compute_power(rawvolts24, rawamps)
+    power28, power_low28, power_high28 = compute_power(rawvolts28, rawamps)
 
-    make_plot(convert_time(rawtimes), rawvolts, rawamps, midamps,
-              power, power_low, power_high)
+    make_plot(convert_time(rawtimes), rawvolts24, rawvolts28, rawamps, midamps,
+              power24, power_low24, power_high24, power28, power_low28,
+              power_high28)
 
 
 if __name__ == '__main__':
