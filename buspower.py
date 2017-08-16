@@ -8,7 +8,6 @@ __author__ = "Dr. Grant R. Tremblay"
 __license__ = "MIT"
 
 import sys
-import os
 
 import datetime as dt
 
@@ -18,12 +17,14 @@ import matplotlib.pyplot as plt
 from matplotlib.dates import epoch2num
 
 try:
-    import plotly.plotly
+    import plotly.plotly as py
+    import plotly.graph_objs as go
 except ImportError:
     print("plotly is not installed. Disabling this functionality.")
 
 import numpy as np
 from scipy import stats
+
 
 def convert_time(rawtimes):
     """
@@ -55,6 +56,7 @@ def convert_time(rawtimes):
     times = (np.asarray(rawtimes) - rawtimes[0]) / 86400. + plotdate_start
 
     return times
+
 
 def compute_power(rawvolts, rawamps):
     """
@@ -96,8 +98,6 @@ def make_plot(time, voltage24, voltage28, current,
                   alpha=0.8, label='2P24VAVL : Daily'
                   )
 
-
-
     ax2.plot_date(time, current,
                   markersize=1.5, color='gray',
                   alpha=0.8, label='2PRBSCR : Daily'
@@ -105,17 +105,17 @@ def make_plot(time, voltage24, voltage28, current,
 
     ax2.plot_date(time, midcurrent, markersize=1.5, label='Current MidVals')
 
-
-
     ax3.plot_date(time, power28, markersize=1.5,
                   label=r'Power (2PRBSVL $\times$ 2PRBSCR)')
 
-    ax3.fill_between(time, power_low28, power_high28, color='gray', alpha=0.3, label='Power envelope')
+    ax3.fill_between(time, power_low28, power_high28,
+                     color='gray', alpha=0.3, label='Power envelope')
 
     ax3.plot_date(time, power24, markersize=1.5,
                   label=r'Power (2P24VAVL $\times$ 2PRBSCR)')
 
-    ax3.fill_between(time, power_low24, power_high24, color='gray', alpha=0.3, label=None)
+    ax3.fill_between(time, power_low24, power_high24,
+                     color='gray', alpha=0.3, label=None)
 
     ax3.set_ylim(32, 56)
 
@@ -136,16 +136,19 @@ def make_plot(time, voltage24, voltage28, current,
     # if kwargs is not None:
     #    for key, value in kwargs.iteritems()
 
+
 def bindata(x, y, bins):
     """Bin the data, make errorbars"""
 
-    bin_means, bin_edges, binnumber \
-        = stats.binned_statistic(x, y, statistic='mean', bins=bins)
+    pass
 
-    bin_width = (bin_edges[1] - bin_edges[0])
-    bin_centers = bin_edges[1:] - bin_width/2
-
-    return bin_means, bin_edges, bin_width, bin_centers
+    # bin_means, bin_edges, binnumber \
+    #     = stats.binned_statistic(x, y, statistic='mean', bins=bins)
+    #
+    # bin_width = (bin_edges[1] - bin_edges[0])
+    # bin_centers = bin_edges[1:] - bin_width / 2
+    #
+    # return bin_means, bin_edges, bin_width, bin_centers
     # nbins = 1000
     #
     # x, _ = np.histogram(times, bins=nbins)
@@ -158,10 +161,51 @@ def bindata(x, y, bins):
     # return x, sy, mean, std
 
 
-def make_plotly_plot():
+def make_plotly(times, rawvolts, power):
     """Optionally, make an interactive online plot at plot.ly"""
-    pass
+
+    plotly_times = times / 365.2422
+
+    trace = go.Scatter(
+        x = plotly_times,
+        y = power,
+        name = 'HRCBusPower',
+        mode = 'markers',
+        marker=dict(
+        size='8',
+        color = rawvolts, #set color equal to a variable
+        colorscale='Viridis',
+        showscale=True,
+        colorbar=go.ColorBar(
+                title='Voltage (Volts)'
+            ),
+        )
+    )
+
+    layout= go.Layout(
+    title= 'Chandra / HRC Primary Bus Power over Mission Lifetime',
+    hovermode= 'closest',
+    xaxis= dict(
+        title= 'Year',
+        ticklen= 5,
+        zeroline= False,
+        gridwidth= 2,
+    ),
+    yaxis=dict(
+        title= 'Power (Watts)',
+        ticklen= 5,
+        gridwidth= 2,
+    ),
+    showlegend= False)
+
+    data = [trace]
+
+    fig = go.Figure(data=data, layout=layout)
+    py.plot(fig, filename='HRC Primary Bus Power', sharing='public')
+
+
     #plotly.plotly.plot(rawtimes, rawvolts)
+
 
 def main():
 
@@ -195,6 +239,10 @@ def main():
               power24, power_low24, power_high24, power28, power_low28,
               power_high28)
 
+    if 'py' in sys.modules:
+        make_plotly(convert_time(rawtimes), rawvolts28, power28)
+    else:
+        pass
 
 if __name__ == '__main__':
     main()
