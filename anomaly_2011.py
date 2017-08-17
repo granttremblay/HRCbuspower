@@ -82,21 +82,28 @@ def make_plot(hrcdailytimes, acisdailytimes, fivemintimes, hrcdailyvolts,
                   )
 
 
+
     ax2.plot_date(fivemintimes, hrc5minvolts, markersize=1.5,
-                  label='HRC 5 Minute Stats', color='gray', alpha=0.8)
+                  label='HRC 5 Minute Stats', color='gray', alpha=0.6)
 
     ax2.plot_date(hrcdailytimes, hrcdailyvolts, markersize=2.5, label='HRC Daily Stats')
+
+    ax2.hlines(28.9, dt.date(2011,5,1), dt.date(2013,12,1), linestyle='dashed', colors='gray')
+    ax2.hlines(28.27, dt.date(2012,5,1), dt.date(2013,12,1), linestyle='dashed', colors='gray')
+    ax2.hlines(28.03, dt.date(2013,6,1), dt.date(2013,12,1), linestyle='dashed', colors='gray')
 
 
     ax1.set_title('HRC and ACIS +28V Bus Voltage Drop')
     ax1.set_ylabel('Voltage (Volts)')
     ax1.set_xlabel('Year')
 
-    ax2.set_xlim([dt.date(2011,2,1), dt.date(2012,12,1)])
+    ax2.set_xlim([dt.date(2011,2,1), dt.date(2013,12,1)])
     ax2.set_ylim(26, 29.5)
 
     ax2.set_ylabel('Voltage(Volts)')
     ax2.set_xlabel('Year')
+
+
 
     ax1.legend(loc=1)
     ax2.legend(loc=1)
