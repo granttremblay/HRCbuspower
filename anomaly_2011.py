@@ -88,7 +88,7 @@ def make_plot(hrcdailytimes, acisdailytimes, fivemintimes, hrcdailyvolts,
     ax2.plot_date(hrcdailytimes, hrcdailyvolts, markersize=2.5, label='HRC Daily Stats')
 
 
-    ax1.set_title('The 2011 Anomaly')
+    ax1.set_title('HRC and ACIS +28V Bus Voltage Drop')
     ax1.set_ylabel('Voltage (Volts)')
     ax1.set_xlabel('Year')
 
